@@ -1,0 +1,19 @@
+run_name: bert-embeddings-pile-val-mp
+platform: r7z2
+gpu_type: a100_40gb
+gpu_num: 8
+image: growlix/data-dedupe
+command: |
+  cd streaming
+
+  git pull
+
+  cd scripts/deduplication/approximate
+  
+  pip install awscli
+  
+  pip install --upgrade requests
+
+  python get_embeddings.py --batch_size_dataloader 256 --batch_size_inference 512 --parallel_strategy mp --file_name EMB_MEMORY.npy --split val
+
+  aws s3 cp EMB_MEMORY.npy s3://mosaicml-internal-checkpoints-shared/matthew/embeddings/pile_val_e5base_embeddings.npy

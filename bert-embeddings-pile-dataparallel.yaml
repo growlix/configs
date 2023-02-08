@@ -1,4 +1,4 @@
-run_name: bert-embeddings-pile
+run_name: bert-embeddings-pile-dp
 platform: r1z1
 gpu_type: a100_80gb
 gpu_num: 8
@@ -14,6 +14,6 @@ command: |
   
   pip install --upgrade requests
 
-  python get_embeddings.py --batch_size_dataloader 384 --batch_size_inference 768 --file_name EMB_MEMORY.npy
+  python get_embeddings.py --batch_size_dataloader 6144 --batch_size_inference 12288 --file_name EMB_MEMORY.npy
 
   aws s3 cp EMB_MEMORY.npy s3://mosaicml-internal-checkpoints-shared/matthew/embeddings/pile_train_e5base_embeddings.npy

@@ -1,0 +1,19 @@
+run_name: bert-embeddings-c4
+platform: r1z1
+gpu_type: a100_80gb
+gpu_num: 8
+image: growlix/data-dedupe
+command: |
+  cd streaming
+
+  git pull
+
+  cd scripts/deduplication/approximate
+  
+  pip install awscli
+  
+  pip install --upgrade requests
+
+  python get_embeddings.py --batch_size_dataloader 512 --batch_size_inference 1024 --streaming_remote s3://mosaicml-internal-dataset-c4/mds/2/ --file_name EMB_MEMORY.npy
+
+  aws s3 cp EMB_MEMORY.npy s3://mosaicml-internal-checkpoints-shared/matthew/embeddings/c4_train_e5base_embeddings.npy

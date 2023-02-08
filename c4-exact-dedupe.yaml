@@ -1,0 +1,43 @@
+run_name: c4-exact-dedupe
+platform: r7z2
+gpu_type: a100_40gb
+gpu_num: 8
+image: growlix/data-dedupe
+command: |
+  cd streaming/scripts/deduplication/exact
+
+  git pull
+  
+  pip install awscli
+  
+  python create_bytes_and_offsets.py --streaming_remote s3://mosaicml-internal-dataset-c4/mds/2/ --streaming_local /tmp/c4 --save_dir ~/preprocessed --split train --name c4
+
+  ulimit -Sn 1000000
+
+  python make_suffix_array.py ~/preprocessed/c4.train
+  
+  cargo run self-similar --data-file ~/preprocessed/c4.train --length-threshold 100 --cache-dir /tmp/cache --num-threads 64
+  
+  cargo run collect --data-file ~/preprocessed/c4.train --cache-dir /tmp/cache --length-threshold 100 > ~/preprocessed/c4.train.remove.byterange
+  
+  python finish_dedup.py --streaming_local /tmp/c4 --data_dir ~/preprocessed --save_dir c4/100tok/train --name c4 --split train --remove ~/preprocessed/c4.train.remove.byterange --suffixarray_dir ~/preprocessed/
+
+  aws s3 cp c4 s3://mosaicml-internal-checkpoints-shared/matthew/dedupe/c4 --recursive
+  
+#  aws s3 cp ~/preprocessed/c4.train s3://mosaicml-internal-checkpoints-shared/matthew/c4-dedupe/c4.train
+   
+#  aws s3 cp ~/preprocessed/c4.train.size s3://mosaicml-internal-checkpoints-shared/matthew/c4-dedupe/c4.train.size
+
+#  aws s3 cp ~/preprocessed/c4.train.table.bin s3://mosaicml-internal-checkpoints-shared/matthew/c4-dedupe/c4.train.table.bin
+
+#  aws s3api put-object mosaicml-internal-checkpoints-shared --key matthew/c4-dedupe/c4.train.remove.byterange --body ~/preprocessed/c4.train.remove.byterange
+
+# aws s3 cp s3://mosaicml-internal-checkpoints-shared/matthew/c4-dedupe/c4.train ~/preprocessed/c4.train
+
+# aws s3 cp s3://mosaicml-internal-checkpoints-shared/matthew/c4-dedupe/c4.train.size ~/preprocessed/c4.train.size
+
+# ulimit -Sn 1000000
+
+# python make_suffix_array.py ~/preprocessed/c4.train
+  
+# aws s3 cp ~/preprocessed/c4.train.table.bin s3://mosaicml-internal-checkpoints-shared/matthew/c4-dedupe/c4.train.table.bin
