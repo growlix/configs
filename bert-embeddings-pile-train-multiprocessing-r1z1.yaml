@@ -1,0 +1,19 @@
+run_name: bert-embeddings-pile-train-mp
+platform: r1z1
+gpu_type: a100_80gb
+gpu_num: 8
+image: growlix/data-dedupe
+command: |
+  cd streaming
+
+  git pull
+
+  cd scripts/deduplication/approximate
+  
+  pip install awscli
+  
+  pip install --upgrade requests
+
+  python get_embeddings.py --batch_size_dataloader 448 --batch_size_inference 896 --parallel_strategy mp --file_name EMB_MEMORY.npy --split train
+
+  aws s3 cp EMB_MEMORY.npy s3://mosaicml-internal-checkpoints-shared/matthew/embeddings/pile_train_e5base_embeddings.npy
