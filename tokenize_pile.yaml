@@ -1,0 +1,20 @@
+run_name: tokenize-pile
+platform: r7z2
+gpu_type: a100_40gb
+gpu_num: 8
+image: mosaicml/examples:llm-latest
+integrations:
+  - integration_type: git_repo
+    git_repo: mosaicml/examples
+    git_branch: main  
+command: |
+  cd examples
+
+  git pull
+
+  pip install awscli
+
+  pip install zstandard
+
+  python examples/common/convert_dataset.py --dataset the_pile --data_subset all --splits --out_root /tmp/dataset_tokenized --compression zstd --concat_tokens 2048 --tokenizer gpt2 --eos_text '<|endoftext|>'
+
