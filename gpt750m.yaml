@@ -1,4 +1,4 @@
-run_name: gpt-1b
+run_name: gpt-750m
 platform: r1z1
 gpu_type: a100_80gb
 gpu_num: 8
@@ -24,4 +24,4 @@ command: |
 
   cd examples/llm
 
-  composer main.py yamls/mosaic_gpt/1b.yaml
+  composer main.py yamls/mosaic_gpt/750m.yaml
