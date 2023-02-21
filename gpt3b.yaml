@@ -24,4 +24,4 @@ command: |
 
   cd examples/llm
 
-  composer main.py yamls/mosaic_gpt/3b.yaml
+  composer main.py yamls/mosaic_gpt/3b.yaml --seed 42

@@ -1,6 +1,6 @@
 run_name: gpt-1b
-platform: r1z1
-gpu_type: a100_80gb
+platform: r7z2
+gpu_type: a100_40gb
 gpu_num: 8
 image: mosaicml/examples:llm-latest
 optimization_level: 0
@@ -24,4 +24,4 @@ command: |
 
   cd examples/llm
 
-  composer main.py yamls/mosaic_gpt/1b.yaml
+  composer main.py yamls/mosaic_gpt/1b.yaml --seed 42
