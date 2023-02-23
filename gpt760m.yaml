@@ -1,7 +1,6 @@
 run_name: gpt-760m
-platform: r8z5 #aws # gcp-a2
+platform: r8z5 # aws # gcp # internal_cloud
 gpu_type: a100_40gb
-gpu_num: 8
 image: growlix/wandb-model-registry-demo
 optimization_level: 0
 # Easy setup of dependencies and execution environment
