@@ -10,6 +10,6 @@ command: |
   
   aws s3 cp s3://mosaicml-internal-checkpoints-shared/matthew/similarities/c4_train_max_similarity.pkl /tmp/similarities/c4_train_max_similarity.pkl
   
-  python3 scripts/deduplication/approximate/write_and_prune_dataset.py --streaming_remote s3://mosaicml-internal-dataset-c4/mds/2/ --streaming_local /tmp/streaming_datasets/c4/ --split train --name c4 --save_dir /tmp/pruned_datasets/c4/keep_0pt7 --similarity_file /tmp/similarities/c4_train_max_similarity.pkl --keep_fraction .7
+  python3 scripts/deduplication/approximate/write_and_prune_dataset.py --streaming_remote s3://mosaicml-internal-dataset-c4/mds/2/ --streaming_local /tmp/streaming_datasets/c4/ --split train --name c4 --save_dir /tmp/pruned_datasets/c4/keep_0pt1 --similarity_file /tmp/similarities/c4_train_max_similarity.pkl --keep_fraction .1
   
   aws s3 cp /tmp/pruned_datasets s3://mosaicml-internal-checkpoints-shared/matthew/ --recursive

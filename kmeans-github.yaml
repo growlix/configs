@@ -1,0 +1,15 @@
+run_name: kmeans-github
+platform: r1z1
+gpu_type: a100_80gb
+gpu_num: 8
+image: growlix/data-dedupe
+command: |
+  cd streaming
+
+  git pull
+
+  aws s3 cp s3://mosaicml-internal-checkpoints-shared/matthew/embeddings/github_train_e5base_embeddings.npy /tmp/EMB_ARRAY.npy
+
+  python scripts/deduplication/approximate/kmeans.py --data_path /tmp/EMB_ARRAY.npy  --n_samples 18044218 --dim 768 --filename_base github_train --n_centroids 5000
+
+  aws s3 cp /tmp/centroids/github_train_clusters.pkl s3://mosaicml-internal-checkpoints-shared/matthew/kmeans/github_train_clusters.pkl

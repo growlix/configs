@@ -8,6 +8,6 @@ command: |
 
   git pull
   
-  python scripts/subset_pile.py --streaming_remote s3://mosaicml-internal-dataset-the-pile/mds/2/ --streaming_local /tmp/streaming_datasets/pile/ --split train --save_dir /tmp/subsets/pile/wikipedia --subsets wikipedia
+  python scripts/subset_pile.py --streaming_remote s3://mosaicml-internal-dataset-the-pile/mds/2/ --streaming_local /tmp/streaming_datasets/pile/ --split train --save_dir /tmp/subsets/pile/pile-cc --subsets pile-cc
   
   aws s3 cp /tmp/subsets/pile/ s3://mosaicml-internal-checkpoints-shared/matthew/ --recursive
