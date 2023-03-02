@@ -1,4 +1,4 @@
-run_name: v003-02-24-23-1b_baseline
+run_name: v003-02-24-23-1b-pile-0pt6
  
 gpu_type: a100_40gb
 gpu_num: 32
@@ -7,7 +7,7 @@ image: mosaicml/pytorch:1.13.1_cu117-python3.10-ubuntu20.04
 
 integrations:  
   - integration_type: wandb
-    project: hparam-exploration-022723
+    project: hero-pretrain-data-exps
     entity: mosaic-ml
   - integration_type: git_repo
     git_repo: mosaicml/examples
@@ -72,7 +72,7 @@ parameters:
     name: text
     dataset:
       local: ${data_local}
-      remote: ${data_remote}
+      remote: s3://mosaicml-internal-checkpoints-shared/matthew/pile/preconcat/full/
       split: val
       shuffle: false
       tokenizer_name: ${tokenizer_name}

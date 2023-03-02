@@ -7,7 +7,7 @@ image: mosaicml/pytorch:1.13.1_cu117-python3.10-ubuntu20.04
 
 integrations:  
   - integration_type: wandb
-    project: hparam-exploration-022723
+    project: hero-pretrain-data-exps
     entity: mosaic-ml
   - integration_type: git_repo
     git_repo: mosaicml/examples
