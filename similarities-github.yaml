@@ -8,7 +8,7 @@ command: |
 
   git pull
 
-  aws s3 cp s3://mosaicml-internal-checkpoints-shared/matthew/embeddings/github_e5base_embeddings.npy /tmp/github_train_embeddings.npy
+  aws s3 cp s3://mosaicml-internal-checkpoints-shared/matthew/embeddings/github_train_e5base_embeddings.npy /tmp/github_train_embeddings.npy
   
   aws s3 cp s3://mosaicml-internal-checkpoints-shared/matthew/kmeans/github_train_clusters.pkl /tmp/github_train_clusters.pkl
 
