@@ -14,4 +14,4 @@ command: |
 
   python examples/common/pretokenize_streaming_dataset.py --local /tmp/streaming_datasets/pile --remote s3://mosaicml-internal-checkpoints-shared/matthew/pile/keep_0pt8 --splits train --out_root /tmp/preconcat/0pt8 --compression zstd --concat_tokens 2048 --tokenizer gpt2 --eos_text '<|endoftext|>'
   
-  aws s3 cp /tmp/preconcat s3://mosaicml-internal-checkpoints-shared/matthew/pile --recursive
+  aws s3 cp /tmp/preconcat s3://mosaicml-internal-checkpoints-shared/matthew/pile/preconcat --recursive
