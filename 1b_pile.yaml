@@ -3,7 +3,7 @@ save_folder: &save_folder s3://mosaicml-internal-checkpoints-shared/matthew/hero
  
 gpu_type: a100_40gb
 gpu_num: 32
-platform: r12z1
+platform: r7z2
 image: mosaicml/pytorch:1.13.1_cu117-python3.10-ubuntu20.04
 
 integrations:  
