@@ -1,5 +1,5 @@
-run_name: v003-02-24-23-1b-pile-0pt6
-save_folder: &save_folder s3://mosaicml-internal-checkpoints-shared/matthew/hero-pretrain-data-exps/v003-02-24-23-1b-pile-0pt6/checkpoints
+run_name: v003-02-24-23-1b-pile-0pt7
+save_folder: &save_folder s3://mosaicml-internal-checkpoints-shared/matthew/hero-pretrain-data-exps/v003-02-24-23-1b-pile-0pt7/checkpoints
  
 gpu_type: a100_40gb
 gpu_num: 32
@@ -60,7 +60,7 @@ parameters:
     name: text
     dataset:
       local: ${data_local}
-      remote: s3://mosaicml-internal-checkpoints-shared/matthew/pile/preconcat/0pt6/
+      remote: s3://mosaicml-internal-checkpoints-shared/matthew/pile/preconcat/0pt7/
       split: train
       shuffle: true
       tokenizer_name: ${tokenizer_name}

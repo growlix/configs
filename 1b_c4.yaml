@@ -1,4 +1,5 @@
 run_name: v003-02-24-23-1b-c4
+save_folder: &save_folder s3://mosaicml-internal-checkpoints-shared/matthew/hero-pretrain-data-exps/v003-02-24-23-1b-c4/checkpoints
  
 gpu_type: a100_40gb
 gpu_num: 32
@@ -137,6 +138,10 @@ parameters:
 
   loggers:
     wandb: {}
+
+  save_interval: 2000ba
+  save_folder: *save_folder
+  autoresume: true
 
   icl_tasks:
   -
