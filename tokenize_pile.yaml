@@ -1,4 +1,4 @@
-run_name: tokenize-pile-0pt8
+run_name: tokenize-pile-full
 platform: r1z1
 gpu_type: a100_80gb
 gpu_num: 8
