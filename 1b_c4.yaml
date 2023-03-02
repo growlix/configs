@@ -1,4 +1,4 @@
-run_name: v003-02-24-23-1b_baseline
+run_name: v003-02-24-23-1b-c4
  
 gpu_type: a100_40gb
 gpu_num: 32
