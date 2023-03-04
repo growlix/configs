@@ -1,0 +1,13 @@
+run_name: pile-subset-pa-a-pcc-nih-u-b3-se-e-pc-g-f-l-w-g
+platform: r1z1
+gpu_type: a100_80gb
+gpu_num: 8
+image: growlix/data-dedupe
+command: |
+  cd streaming
+
+  git pull
+  
+  python scripts/subset_pile.py --streaming_remote s3://mosaicml-internal-checkpoints-shared/matthew/pile/keep_0pt7/ --streaming_local /tmp/streaming_datasets/pile/ --split train --save_dir /tmp/subsets/pile/pa-a-pcc-nih-u-b3-se-e-pc-g-f-l-w-g --subsets pubmed_abstracts arxiv pile-cc nih hn ubuntu book3 stackexchange enron pubmed_central gutenberg freelaw wikipedia github
+  
+  aws s3 cp /tmp/subsets/pile/ s3://mosaicml-internal-checkpoints-shared/matthew/--recursive
