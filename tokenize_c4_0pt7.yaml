@@ -1,0 +1,17 @@
+run_name: tokenize-c4-0pt7
+platform: r1z1
+gpu_type: a100_80gb
+gpu_num: 8
+image: mosaicml/examples:llm-latest
+integrations:
+- integration_type: git_repo
+  git_repo: codestar12/examples
+  git_branch: streaming_concat
+command: |
+  cd examples
+
+  pip install awscli
+
+  python examples/common/pretokenize_streaming_dataset.py --local /tmp/streaming_datasets/pile --remote s3://mosaicml-internal-checkpoints-shared/matthew/c4/keep_0pt7 --splits train --out_root /tmp/preconcat/0pt7 --compression zstd --concat_tokens 2048 --tokenizer gpt2 --eos_text '<|endoftext|>'
+  
+  aws s3 cp /tmp/preconcat s3://mosaicml-internal-checkpoints-shared/matthew/c4/preconcat --recursive
