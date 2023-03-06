@@ -1,9 +1,9 @@
 run_name: v003-02-24-23-1b-c4-0pt7
 save_folder: &save_folder s3://mosaicml-internal-checkpoints-shared/matthew/hero-pretrain-data-exps/v003-02-24-23-1b-c4-0pt7/checkpoints
  
-gpu_type: a100_80gb
-gpu_num: 8
-platform: r1z1
+gpu_type: a100_40gb
+gpu_num: 32
+platform: r12z1
 image: mosaicml/pytorch:1.13.1_cu117-python3.10-ubuntu20.04
 
 integrations:  
@@ -13,7 +13,7 @@ integrations:
   - integration_type: git_repo
     git_repo: mosaicml/examples
     # git_branch: hero-2-24
-    git_commit: 4b207063bd6b8c18b0217c3072c955ee75bd84a6 
+    git_commit: b798cd0118d16522278727b4b0e87132336873ea 
     pip_install: '.[llm]'
 
 command: |
@@ -22,7 +22,8 @@ command: |
 
 parameters:
   data_local: /tmp/c4
-  data_remote: s3://mosaicml-internal-checkpoints-shared/c4/gpt2-tokenized-2k/
+  train_data_remote: s3://mosaicml-internal-checkpoints-shared/matthew/c4/keep_0pt9/
+  eval_data_remote: s3://mosaicml-internal-checkpoints-shared/c4/gpt2-tokenized-2k/
   tokenizer_name: gpt2
   max_seq_len: 2048
   global_seed: 17
@@ -36,17 +37,19 @@ parameters:
     init_device: meta
     tokenizer_name: ${tokenizer_name}
     d_model: 2048
-    n_heads: 16 # Modified 24->16 so that d_head == 128 to statisfy FlashAttention
+    n_heads: 16 # Modified 24->16 so that d_head == 128 to satisfy FlashAttention
     n_layers: 24
     mlp_ratio: 4
     max_seq_len: ${max_seq_len}
-    vocab_size: 50272
+    vocab_size: 50304
     init_std: 0.02
     attn_pdrop: 0.0
     resid_pdrop: 0.0
     emb_pdrop: 0.0
     attn_impl: flash
-    attn_qk_ln: true
+    low_precision_layernorm: true
+    attn_clip_qkv: 2.0
+    bias: true
 
   # Tokenizer
   tokenizer:
@@ -60,7 +63,7 @@ parameters:
     name: text
     dataset:
       local: ${data_local}
-      remote: s3://mosaicml-internal-checkpoints-shared/matthew/c4/preconcat/0pt7/
+      remote: ${train_data_remote}
       split: train
       shuffle: true
       tokenizer_name: ${tokenizer_name}
@@ -73,7 +76,7 @@ parameters:
     name: text
     dataset:
       local: ${data_local}
-      remote: ${data_remote}
+      remote: ${eval_data_remote}
       split: val
       shuffle: false
       tokenizer_name: ${tokenizer_name}
@@ -86,42 +89,40 @@ parameters:
   scheduler:
     name: cosine_with_warmup
     t_warmup: 0.1dur
-    alpha_f: 0.1
+    alpha_f: 0.01
 
   optimizer:
-    name: decoupled_adamw
-    lr: 3.2e-3 # 16x
+    name: decoupled_lionw
+    lr: 3.2e-4
     betas:
-    - 0.9
-    - 0.95
-    eps: 1.0e-08
-    weight_decay: 0.0
+      - 0.9
+      - 0.95
+    weight_decay: 3.2e-5
 
   algorithms:
     gradient_clipping:
       clipping_type: norm
       clipping_threshold: 1.0
 
-  max_duration: 24800ba # ~ 26B tokens
-  eval_interval: 1000ba
+  max_duration: 12400ba # ~ 26B tokens
+  eval_interval: 500ba
   eval_subset_num_batches: -1
   eval_first: true
-  global_train_batch_size: 512
+  global_train_batch_size: 1024 # ~ 2M tokens
 
   # System
   seed: ${global_seed}
   device_eval_batch_size: 4
   device_train_microbatch_size: 4
-  # device_train_microbatch_size: auto
   precision: amp_bf16
 
   # FSDP
   fsdp_config:
     sharding_strategy: FULL_SHARD
-    mixed_precision: DEFAULT
+    mixed_precision: PURE
     activation_checkpointing: false
     activation_cpu_offload: false
-    verbose: false
+    verbose: true
 
   # Logging
   progress_bar: false
@@ -135,166 +136,13 @@ parameters:
     lr_monitor: {}
     memory_monitor: {}
     optimizer_monitor: {}
+    health_checker:
+      test_mode: true
 
   loggers:
     wandb: {}
 
-  save_interval: 2000ba
+  save_interval: 500ba
   save_folder: *save_folder
+  save_num_checkpoints_to_keep: 1
   autoresume: true
-
-  icl_tasks:
-  -
-    label: lambada_openai
-    dataset_uri: s3://mosaicml-internal-dataset-lambda/lambada/lambada_openai.jsonl # ADD YOUR OWN DATASET URI
-    num_fewshot:
-    - 0
-    batch_size: 10
-    icl_task_type: language_modeling
-    metric_names:
-    - InContextLearningLMAccuracy
-    prompt_string: '' # this goes at the beginning of each input
-    example_delimiter: '\n' # this goes between fewshot examples
-    continuation_delimiter: ' ' # this separates contexts from continuations
-  -
-    label: lambada_standard
-    dataset_uri: s3://mosaicml-internal-dataset-lambda/lambada/lambada_standard.jsonl # ADD YOUR OWN DATASET URI
-    num_fewshot:
-    - 0
-    batch_size: 10
-    icl_task_type: language_modeling
-    metric_names:
-    - InContextLearningLMAccuracy
-    prompt_string: '' # this goes at the beginning of each input
-    example_delimiter: '\n' # this goes between fewshot examples
-    continuation_delimiter: ' ' # this separates contexts from continuations
-  -
-    label: piqa
-    dataset_uri:  s3://mosaicml-internal-dataset-lambda/lambada/piqa.jsonl # ADD YOUR OWN DATASET URI
-    num_fewshot:
-    - 0
-    - 5
-    batch_size: 10
-    icl_task_type: multiple_choice
-    metric_names:
-    - InContextLearningMultipleChoiceAccuracy
-    prompt_string: '' # this goes at the beginning of each input
-    example_delimiter: '\n' # this goes between fewshot examples
-    continuation_delimiter: ' ' # this separates questions from answers
-  -
-    label: hellaswag
-    dataset_uri: s3://mosaicml-internal-dataset-lambda/lambada/hellaswag.jsonl # ADD YOUR OWN DATASET URI
-    num_fewshot:
-    - 0
-    - 5
-    batch_size: 10
-    icl_task_type: multiple_choice
-    metric_names:
-    - InContextLearningMultipleChoiceAccuracy
-    prompt_string: '' # this goes at the beginning of each input
-    example_delimiter: '\n' # this goes between fewshot examples
-    continuation_delimiter: ' ' # this separates questions from answers
-  -
-    label: arc_easy
-    dataset_uri: s3://mosaicml-internal-dataset-lambda/lambada/arc_easy.jsonl # ADD YOUR OWN DATASET URI
-    num_fewshot:
-    - 0
-    - 5
-    batch_size: 10
-    icl_task_type: multiple_choice
-    metric_names:
-    - InContextLearningMultipleChoiceAccuracy
-    prompt_string: '' # this goes at the beginning of each input
-    example_delimiter: '\n' # this goes between fewshot examples
-    continuation_delimiter: ' ' # this separates questions from answers
-  -
-    label: copa
-    dataset_uri: s3://mosaicml-internal-dataset-lambda/lambada/copa.jsonl # ADD YOUR OWN DATASET URI
-    num_fewshot:
-    - 0
-    - 5
-    batch_size: 10
-    icl_task_type: multiple_choice
-    metric_names:
-    - InContextLearningMultipleChoiceAccuracy
-    prompt_string: '' # this goes at the beginning of each input
-    example_delimiter: '\n' # this goes between fewshot examples
-    continuation_delimiter: ' Answer: ' # this separates questions from answers
-  -
-    label: boolq
-    dataset_uri: s3://mosaicml-internal-dataset-lambda/lambada/boolq.jsonl # ADD YOUR OWN DATASET URI
-    num_fewshot:
-    - 0
-    - 5
-    batch_size: 10
-    icl_task_type: language_modeling
-    metric_names:
-    - InContextLearningLMAccuracy
-    prompt_string: '' # this goes at the beginning of each input
-    example_delimiter: '\n' # this goes between fewshot examples
-    continuation_delimiter: ' Answer: ' # this separates questions from answers
-  -
-    label: jeopardy_american_history
-    dataset_uri: s3://mosaicml-internal-dataset-lambda/factuality/jeopardy/jeopardy_american_history.jsonl # ADD YOUR OWN DATASET URI
-    num_fewshot:
-    - 0
-    - 5
-    batch_size: 10
-    icl_task_type: language_modeling
-    metric_names:
-    - InContextLearningLMAccuracy
-    prompt_string: '' # this goes at the beginning of each input
-    example_delimiter: '\n' # this goes between fewshot examples
-    continuation_delimiter: ' Answer: ' # this separates questions from answers
-  -
-    label: jeopardy_literature
-    dataset_uri: s3://mosaicml-internal-dataset-lambda/factuality/jeopardy/jeopardy_literature.jsonl # ADD YOUR OWN DATASET URI
-    num_fewshot:
-    - 0
-    - 5
-    batch_size: 10
-    icl_task_type: language_modeling
-    metric_names:
-    - InContextLearningLMAccuracy
-    prompt_string: '' # this goes at the beginning of each input
-    example_delimiter: '\n' # this goes between fewshot examples
-    continuation_delimiter: ' Answer: ' # this separates questions from answers
-  -
-    label: jeopardy_science
-    dataset_uri: s3://mosaicml-internal-dataset-lambda/factuality/jeopardy/jeopardy_science.jsonl # ADD YOUR OWN DATASET URI
-    num_fewshot:
-    - 0
-    - 5
-    batch_size: 10
-    icl_task_type: language_modeling
-    metric_names:
-    - InContextLearningLMAccuracy
-    prompt_string: '' # this goes at the beginning of each input
-    example_delimiter: '\n' # this goes between fewshot examples
-    continuation_delimiter: ' Answer: ' # this separates questions from answers
-  -
-    label: jeopardy_word_origins
-    dataset_uri: s3://mosaicml-internal-dataset-lambda/factuality/jeopardy/jeopardy_word_origins.jsonl # ADD YOUR OWN DATASET URI
-    num_fewshot:
-    - 0
-    - 5
-    batch_size: 10
-    icl_task_type: language_modeling
-    metric_names:
-    - InContextLearningLMAccuracy
-    prompt_string: '' # this goes at the beginning of each input
-    example_delimiter: '\n' # this goes between fewshot examples
-    continuation_delimiter: ' Answer: ' # this separates questions from answers
-  -
-    label: jeopardy_world_history
-    dataset_uri: s3://mosaicml-internal-dataset-lambda/factuality/jeopardy/jeopardy_world_history.jsonl # ADD YOUR OWN DATASET URI
-    num_fewshot:
-    - 0
-    - 5
-    batch_size: 10
-    icl_task_type: language_modeling
-    metric_names:
-    - InContextLearningLMAccuracy
-    prompt_string: '' # this goes at the beginning of each input
-    example_delimiter: '\n' # this goes between fewshot examples
-    continuation_delimiter: ' Answer: ' # this separates questions from answers
