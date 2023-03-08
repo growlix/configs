@@ -1,0 +1,13 @@
+run_name: pile-subset-no-bookscorpus-0pt7
+platform: r1z1
+gpu_type: a100_80gb
+gpu_num: 8
+image: growlix/data-dedupe
+command: |
+  cd streaming
+
+  git pull
+  
+  python scripts/subset_pile.py --streaming_remote s3://mosaicml-internal-checkpoints-shared/matthew/pile/keep_0pt7/ --streaming_local /tmp/streaming_datasets/pile/nobookscorpus/keep_0pt7 --split train --save_dir /tmp/subsets/pile/nobookscorpus/keep_0pt7 --block_list bookcorpus2
+  
+  aws s3 cp /tmp/subsets/pile/ s3://mosaicml-internal-checkpoints-shared/matthew/ --recursive
